@@ -6,9 +6,9 @@ export const distributedKeyGeneration = (sealerUrl) => {
     axios.post(`${sealerUrl}/dkg`);
 }
 
-export const sendAddress = (sealerUrl) => {
-    console.log(sealerUrl);
-    axios.post(`${sealerUrl}/wallet`)
+export const sendAddress = (sealer) => {
+    console.log(sealer.url);
+    axios.post(`${sealer.url}/wallet`)
         .then(function (response) {
             // handle success
             console.log(response);
@@ -84,11 +84,17 @@ export const fetchChainSpec = async (sealer) => {
 }
 
 export const startChainNode = async (sealer) => {
-    let response = await axios.post(`${sealer.url}/bootstrap/chain/bootnode?restart=false`);
-    return {
-        sealerName: sealer.name,
-        response: response.data,
+    try {
+        let response = await axios.post(`${sealer.url}/bootstrap/chain/bootnode?restart=false`);
+        console.log(response)
+        return {
+            sealerName: sealer.name,
+            response: response.data,
+        }
+    } catch (e) {
+        console.log(e)
     }
+
 }
 
 export const insertValidatorKeys = async (sealer) => {
@@ -99,6 +105,21 @@ export const insertValidatorKeys = async (sealer) => {
         sealerName: sealer.name,
         response: response.data,
     }
+}
+
+export const startTally = async (sealer, electionId) => {
+    console.log('starting tally');
+    try {
+        let response = await axios.post(`${sealer.url}/tally`, { voteId: electionId });
+        console.log(response.data)
+        return {
+            sealerName: sealer.name,
+            response: response.data,
+        }
+    } catch (e) {
+        console.log(e)
+    }
+
 }
 
 

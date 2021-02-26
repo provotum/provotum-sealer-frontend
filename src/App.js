@@ -1,5 +1,5 @@
 import './App.css';
-import { selectSealers, triggerSendAddress, loadSealers, loadChainSpecForSealer, startChainNodeForSealer, insertValidatorKeysForSealer, selectVotingAuthority, getElections, selectElections, triggerDkgForElection } from './features/chain/chainSlice';
+import { selectSealers, triggerSendAddress, loadSealers, loadChainSpecForSealer, startChainNodeForSealer, insertValidatorKeysForSealer, selectVotingAuthority, getElections, selectElections, triggerDkgForElection, tally } from './features/chain/chainSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import React, { useEffect } from 'react'
 
@@ -21,6 +21,10 @@ function App() {
   }
   const dispatchValidatorKeys = (sealer) => {
     dispatch(insertValidatorKeysForSealer(sealer));
+  }
+
+  const dipatchTally = (sealer, electionId) => {
+    dispatch(tally({ sealer: sealer, electionId: electionId }));
   }
   const dispatchDkg = (sealer, electionId) => {
     console.log(sealer.url, electionId);
@@ -79,6 +83,8 @@ function App() {
       <p>{e.electionId}</p>
       <p>phase: {e.phase}</p>
       <button onClick={() => { dispatchDkg(sealer, e.electionId) }}>create and store public key on the bc</button>
+      <button onClick={() => { dipatchTally(sealer, e.electionId) }}>tally</button>
+
     </div>
   ));
 

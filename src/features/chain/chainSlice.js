@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { sendAddress, getSealers, fetchChainSpec, startChainNode, insertValidatorKeys, getVotes, getVaUrl, triggerDkg } from './api/index';
+import { sendAddress, getSealers, fetchChainSpec, startChainNode, insertValidatorKeys, getVotes, getVaUrl, triggerDkg, startTally } from './api/index';
 
 export const triggerSendAddress = createAsyncThunk('chain/triggerSendAddress', async (sealerUrl) => {
     sendAddress(sealerUrl);
@@ -37,6 +37,13 @@ export const startChainNodeForSealer = createAsyncThunk('chain/startChainNodeFor
 export const insertValidatorKeysForSealer = createAsyncThunk('chain/insertValidatorKeysForSealer', async (sealer) => {
     console.log('sending val keys')
     let result = await insertValidatorKeys(sealer);
+    return result;
+});
+
+export const tally = createAsyncThunk('chain/tally', async (payload) => {
+    console.log('tallying');
+    let result = await startTally(payload.sealer, payload.electionId);
+    console.log(result);
     return result;
 });
 
