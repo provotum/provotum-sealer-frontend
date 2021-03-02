@@ -1,8 +1,40 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { sendAddress, getSealers, fetchChainSpec, startChainNode, insertValidatorKeys, getVotes, getVaUrl, triggerDkg, startTally } from './api/index';
+import { backendHealth, nodeIsRunning, chainSpecLoaded, sendAddress, getSealers, fetchChainSpec, startChainNode, insertValidatorKeys, getVotes, getVaUrl, triggerDkg, startTally, fetchAddresses, fetchWallet } from './api/index';
+
+export const checkBackendRunning = createAsyncThunk('', async (sealer) => {
+    let result = await backendHealth(sealer);
+    console.log(result);
+    return result;
+});
 
 export const triggerSendAddress = createAsyncThunk('chain/triggerSendAddress', async (sealerUrl) => {
     sendAddress(sealerUrl);
+});
+
+export const checkChainSpecLoaded = createAsyncThunk('chain/checkChainSpecLoaded', async (sealer) => {
+    let result = await chainSpecLoaded(sealer);
+    console.log(result);
+    return result;
+});
+
+export const checkNodeRunning = createAsyncThunk('chain/checkNodeRunning', async (sealer) => {
+    let result = await nodeIsRunning(sealer);
+    console.log(result);
+    return result;
+})
+
+export const loadWalletForSealer = createAsyncThunk('chain/loadWalletForSealer', async (sealer) => {
+    let result = await fetchWallet(sealer);
+    console.log(result);
+    let foundSealer = result.registeredSealers.find(s =>
+        s.auraAddress === result.wallet.aura.address &&
+        s.grandpaAddress === result.wallet.grandpa.address
+    );
+    return {
+        sealerName: sealer.name,
+        wallet: result.wallet,
+        registeredWithVA: foundSealer ? true : false
+    }
 });
 
 export const loadSealers = createAsyncThunk('chain/loadSealers', async () => {
@@ -61,6 +93,7 @@ export const slice = createSlice({
         sealers: [],
         elections: [],
         votingAuthority: '',
+        registeredSealers: [],
     },
     reducers: {
         setSealers: (state, action) => {
@@ -68,6 +101,17 @@ export const slice = createSlice({
         }
     },
     extraReducers: {
+        [checkBackendRunning.fulfilled]: (state, action) => {
+            state.sealers.find(s => s.name === action.payload.sealerName).backendHealth = action.payload.health;
+        },
+        [checkNodeRunning.fulfilled]: (state, action) => {
+            state.sealers.find(s => s.name === action.payload.sealerName).nodeIsRunning = action.payload.nodeUp;
+
+        },
+        [checkChainSpecLoaded.fulfilled]: (state, action) => {
+            state.sealers.find(s => s.name === action.payload.sealerName).spec = action.payload.response;
+
+        },
         [loadSealers.fulfilled]: (state, action) => {
             state.sealers = action.payload;
         },
@@ -85,6 +129,12 @@ export const slice = createSlice({
         },
         [insertValidatorKeysForSealer.fulfilled]: (state, action) => {
             state.sealers.find(s => s.name === action.payload.sealerName).keys = action.payload.response;
+        },
+        [loadWalletForSealer.fulfilled]: (state, action) => {
+            let sealer = state.sealers.find(s => s.name === action.payload.sealerName);
+            sealer.wallet = action.payload.wallet;
+            sealer.registeredWithVA = action.payload.registeredWithVA;
+
         }
     }
 })

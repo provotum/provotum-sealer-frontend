@@ -1,9 +1,45 @@
 const axios = require("axios").default;
 
-export const distributedKeyGeneration = (sealerUrl) => {
+export const backendHealth = async (sealer) => {
+  let response = await axios.get(`${sealer.url}/health`);
+  return {
+    sealerName: sealer.name,
+    health: response.data
+  };
+}
+
+export const distributedKeyGeneration = async (sealerUrl) => {
   console.log("starting DKG!");
   axios.post(`${sealerUrl}/dkg`);
 };
+
+export const fetchAddresses = async (sealer) => {
+  console.log('loading addresses');
+
+  //return response;
+}
+export const nodeIsRunning = async (sealer) => {
+  console.log('checking if node is up');
+  let response = await axios.get(`${sealer.url}/bootstrap/chain`);
+  console.log('node up: ', response);
+  return {
+    sealerName: sealer.name,
+    nodeUp: response.data.code === 'ESRCH' ? false : true,
+  }
+}
+
+export const fetchWallet = async (sealer) => {
+  console.log('loading wallet');
+  let response = await axios.get(`${sealer.url}/wallet`);
+  let wallet = response.data;
+  let registeredSealers = await axios.get(`${sealer.url}/bootstrap/registered`)
+  console.log(response);
+  return {
+    sealerName: sealer.name,
+    wallet: wallet,
+    registeredSealers: registeredSealers.data
+  };
+}
 
 export const sendAddress = (sealer) => {
   console.log(sealer.url);
@@ -27,13 +63,15 @@ export const getSealers = async () => {
   return [
     {
       url: process.env.REACT_APP_SEALER_1_URL,
-      name: "bob",
+      name: "sealer-bob",
       spec: {},
       chain: {},
       keys: {},
-      chainNodeRunning: false,
+      backendHealth: {},
       specLoaded: false,
-      backendOnline: false,
+      wallet: {},
+      registeredWithVA: false,
+      nodeIsRunning: false,
     },
     {
       url: process.env.REACT_APP_SEALER_2_URL,
@@ -41,9 +79,11 @@ export const getSealers = async () => {
       spec: {},
       chain: {},
       keys: {},
-      chainNodeRunning: false,
+      backendHealth: {},
       specLoaded: false,
-      backendOnline: false,
+      wallet: {},
+      registeredWithVA: false,
+      nodeIsRunning: false,
     },
   ];
 };
@@ -83,6 +123,14 @@ export const fetchChainSpec = async (sealer) => {
     response: response.data,
   };
 };
+
+export const chainSpecLoaded = async (sealer) => {
+  let response = await axios.get(`${sealer.url}/bootstrap/chain-spec`);
+  return {
+    sealerName: sealer.name,
+    response: response.data
+  }
+}
 
 export const startChainNode = async (sealer) => {
   try {
