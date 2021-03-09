@@ -24,7 +24,7 @@ export const nodeIsRunning = async (sealer) => {
   console.log('node up: ', response);
   return {
     sealerName: sealer.name,
-    nodeUp: response.data.code === 'ESRCH' ? false : true,
+    nodeUp: response.data === 'ESRCH' ? false : true,
   }
 }
 
@@ -72,6 +72,7 @@ export const getSealers = async () => {
       wallet: {},
       registeredWithVA: false,
       nodeIsRunning: false,
+      keysInserted: false,
     },
     {
       url: process.env.REACT_APP_SEALER_2_URL,
@@ -84,6 +85,7 @@ export const getSealers = async () => {
       wallet: {},
       registeredWithVA: false,
       nodeIsRunning: false,
+      keysInserted: false,
     },
   ];
 };
@@ -150,6 +152,16 @@ export const startChainNode = async (sealer) => {
 export const insertValidatorKeys = async (sealer) => {
   console.log("inserting validator keys");
   let response = await axios.post(`${sealer.url}/bootstrap/validators`);
+  console.log(response.data);
+  return {
+    sealerName: sealer.name,
+    response: response.data,
+  };
+};
+
+export const validatorKeysInserted = async (sealer) => {
+  console.log("checking if validator keys inserted");
+  let response = await axios.get(`${sealer.url}/bootstrap/validators`);
   console.log(response.data);
   return {
     sealerName: sealer.name,

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { backendHealth, nodeIsRunning, chainSpecLoaded, sendAddress, getSealers, fetchChainSpec, startChainNode, insertValidatorKeys, getVotes, getVaUrl, triggerDkg, startTally, fetchAddresses, fetchWallet } from './api/index';
+import { validatorKeysInserted, backendHealth, nodeIsRunning, chainSpecLoaded, sendAddress, getSealers, fetchChainSpec, startChainNode, insertValidatorKeys, getVotes, getVaUrl, triggerDkg, startTally, fetchAddresses, fetchWallet } from './api/index';
 
 export const checkBackendRunning = createAsyncThunk('', async (sealer) => {
     let result = await backendHealth(sealer);
@@ -15,6 +15,15 @@ export const checkChainSpecLoaded = createAsyncThunk('chain/checkChainSpecLoaded
     let result = await chainSpecLoaded(sealer);
     console.log(result);
     return result;
+});
+
+export const checkValidatorKeysInserted = createAsyncThunk('chain/checkValidatorKeysInserted', async (sealer) => {
+    let result = await validatorKeysInserted(sealer);
+    console.log(result);
+    return {
+        sealerName: sealer.name,
+        keys: result.hasGrandpaKey && result.hasAuraKey
+    };
 });
 
 export const checkNodeRunning = createAsyncThunk('chain/checkNodeRunning', async (sealer) => {
@@ -101,6 +110,9 @@ export const slice = createSlice({
         }
     },
     extraReducers: {
+        [checkValidatorKeysInserted.fulfilled]: (state, action) => {
+            state.sealers.find(s => s.name === action.payload.sealerName).keysInserted = action.payload;
+        },
         [checkBackendRunning.fulfilled]: (state, action) => {
             state.sealers.find(s => s.name === action.payload.sealerName).backendHealth = action.payload.health;
         },

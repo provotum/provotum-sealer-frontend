@@ -14,7 +14,8 @@ import {
     loadWalletForSealer,
     checkChainSpecLoaded,
     checkNodeRunning,
-    checkBackendRunning
+    checkBackendRunning,
+    checkValidatorKeysInserted
 } from "./../features/chain/chainSlice";
 import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect } from "react";
@@ -22,6 +23,7 @@ import React, { useEffect } from "react";
 function Sealer(props) {
     const dispatch = useDispatch();
     let sealer = props.sealer;
+    const elections = useSelector(selectElections);
 
     useEffect(async () => {
         console.log('checking backend health');
@@ -43,11 +45,15 @@ function Sealer(props) {
         dispatch(checkNodeRunning(sealer));
     }, [dispatch]);
 
+    useEffect(async () => {
+        console.log('checking if validator keys are inserted');
+        dispatch(checkValidatorKeysInserted(sealer));
+    }, [dispatch]);
 
 
 
 
-    const elections = useSelector(selectElections);
+
     const dispatchSendAddress = (sealer) => {
         dispatch(triggerSendAddress(sealer));
     };
@@ -103,20 +109,26 @@ function Sealer(props) {
                 <h3>{e.title}</h3>
                 <p>{e.electionId}</p>
                 <p>phase: {e.phase}</p>
-                <button
-                    onClick={() => {
-                        dispatchDkg(sealer, e.electionId);
-                    }}
-                >
-                    create and store public key on the bc
-        </button>
-                <button
-                    onClick={() => {
-                        dipatchTally(sealer, e.electionId);
-                    }}
-                >
-                    tally
-        </button>
+                {e.phase === 'Tallying' && (
+                    <button
+                        onClick={() => {
+                            dipatchTally(sealer, e.electionId);
+                        }}
+                    >
+                        tally
+                    </button>
+                )}
+                {e.phase === 'DistributedKeyGeneration' && (
+                    <button
+                        onClick={() => {
+                            dispatchDkg(sealer, e.electionId);
+                        }}
+                    >
+                        create and store public key on the bc
+                    </button>
+                )}
+
+
             </div>
         ));
 
@@ -141,7 +153,18 @@ function Sealer(props) {
                                 }}
                             >
                                 send adress to VA
-                            </button>) : (<p>registered with VA</p>)}
+                            </button>) : (
+                                <div>
+                                    <p>registered with VA</p>
+                                    <button
+                                        onClick={() => {
+                                            dispatchSendAddress(sealer);
+                                        }}
+                                    >
+                                        re-send address
+                            </button>
+                                </div>
+                            )}
                         {!sealer.spec.name ? (
                             <button
                                 onClick={() => {
@@ -151,7 +174,13 @@ function Sealer(props) {
                                 get chain spec
                             </button>
                         ) : (
-                            <p>spec loaded</p>
+                            <button
+                                onClick={() => {
+                                    dispatchGetChainSpec(sealer);
+                                }}
+                            >
+                                reload chain spec
+                            </button>
                         )}
                         {!sealer.nodeIsRunning ? (
                             <button
@@ -162,16 +191,33 @@ function Sealer(props) {
                                 start chain node
                             </button>
                         ) : (
-                            <p>node running</p>
+                            <button
+                                onClick={() => {
+                                    dispatchStartChainNode(sealer);
+                                }}
+                            >
+                                stop chain node
+                            </button>
                         )}
+                        {!sealer.keysInserted ? (
+                            <button
+                                onClick={() => {
+                                    dispatchValidatorKeys(sealer);
+                                }}
+                            >
+                                insert validator keys
+                            </button>
+                        ) :
+                            (
+                                <button
+                                    onClick={() => {
+                                        dispatchValidatorKeys(sealer);
+                                    }}
+                                >
+                                    re-insert validator keys
+                                </button>
+                            )}
 
-                        <button
-                            onClick={() => {
-                                dispatchValidatorKeys(sealer);
-                            }}
-                        >
-                            insert validator keys
-            </button>
                     </div>
                 </div>
             ) : (
