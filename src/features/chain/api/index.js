@@ -59,35 +59,20 @@ export const sendAddress = (sealer) => {
     });
 };
 
-export const getSealers = async () => {
-  return [
-    {
-      url: process.env.REACT_APP_SEALER_1_URL,
-      name: "sealer-bob",
-      spec: {},
-      chain: {},
-      keys: {},
-      backendHealth: {},
-      specLoaded: false,
-      wallet: {},
-      registeredWithVA: false,
-      nodeIsRunning: false,
-      keysInserted: false,
-    },
-    {
-      url: process.env.REACT_APP_SEALER_2_URL,
-      name: "max",
-      spec: {},
-      chain: {},
-      keys: {},
-      backendHealth: {},
-      specLoaded: false,
-      wallet: {},
-      registeredWithVA: false,
-      nodeIsRunning: false,
-      keysInserted: false,
-    },
-  ];
+export const getSealer = async () => {
+  return {
+    url: process.env.REACT_APP_SEALER_1_URL,
+    name: "sealer-bob",
+    spec: {},
+    chain: {},
+    keys: {},
+    backendHealth: {},
+    specLoaded: false,
+    wallet: {},
+    registeredWithVA: false,
+    nodeIsRunning: false,
+    keysInserted: false,
+  };
 };
 
 export const getVaUrl = async () => {
@@ -98,13 +83,42 @@ export const getVotes = async (vaUrl) => {
   console.log("fetching votes");
   try {
     let response = await axios.get(`${vaUrl}/votes`);
-    console.log(response);
     return response.data;
   } catch (e) {
     console.log(e);
     return [];
   }
 };
+
+export const fetchResults = async (vaUrl, electionId) => {
+  console.log(`fetching results vor vote ${electionId}`);
+  try {
+    let response = await axios.get(`${vaUrl}/votes/results`, {
+      params: {
+        voteId: electionId
+      }
+    });
+    return response.data;
+
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export const fetchPublicKeyShares = async (vaUrl, electionId) => {
+  console.log(`fetching shares vor vote ${electionId}`);
+  try {
+    let response = await axios.get(`${vaUrl}/votes/publicKeyShares`, {
+      params: {
+        voteId: electionId
+      }
+    });
+    return response.data;
+
+  } catch (e) {
+    console.log(e);
+  }
+}
 
 export const triggerDkg = async (sealer, electionId) => {
   console.log("doing dkg for election: ", electionId);

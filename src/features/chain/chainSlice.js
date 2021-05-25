@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { validatorKeysInserted, backendHealth, nodeIsRunning, chainSpecLoaded, sendAddress, getSealers, fetchChainSpec, startChainNode, insertValidatorKeys, getVotes, getVaUrl, triggerDkg, startTally, fetchAddresses, fetchWallet } from './api/index';
+import { fetchResults, fetchPublicKeyShares, validatorKeysInserted, backendHealth, nodeIsRunning, chainSpecLoaded, sendAddress, getSealer, fetchChainSpec, startChainNode, insertValidatorKeys, getVotes, getVaUrl, triggerDkg, startTally, fetchAddresses, fetchWallet } from './api/index';
 
 export const checkBackendRunning = createAsyncThunk('', async (sealer) => {
     let result = await backendHealth(sealer);
@@ -46,8 +46,8 @@ export const loadWalletForSealer = createAsyncThunk('chain/loadWalletForSealer',
     }
 });
 
-export const loadSealers = createAsyncThunk('chain/loadSealers', async () => {
-    let result = await getSealers();
+export const loadSealer = createAsyncThunk('chain/loadSealer', async () => {
+    let result = await getSealer();
     return result;
 });
 
@@ -72,14 +72,11 @@ export const loadChainSpecForSealer = createAsyncThunk('chain/loadChainSpecForSe
 
 export const startChainNodeForSealer = createAsyncThunk('chain/startChainNodeForSealer', async (sealer) => {
     let result = await startChainNode(sealer);
-    return result;
+    let result2 = await insertValidatorKeys(sealer);
+    return { chain: result, keys: result2 }
 });
 
-export const insertValidatorKeysForSealer = createAsyncThunk('chain/insertValidatorKeysForSealer', async (sealer) => {
-    console.log('sending val keys')
-    let result = await insertValidatorKeys(sealer);
-    return result;
-});
+
 
 export const tally = createAsyncThunk('chain/tally', async (payload) => {
     console.log('tallying');
@@ -88,8 +85,17 @@ export const tally = createAsyncThunk('chain/tally', async (payload) => {
     return result;
 });
 
-export const getElections = createAsyncThunk('chain/getElections', async (vaUrl) => {
+export const getElections = createAsyncThunk('elections/getElections', async (vaUrl) => {
+    console.log('loading elections')
     let result = await getVotes(vaUrl);
+    console.log(result)
+    for await (const vote of result) {
+        let shares = await fetchPublicKeyShares(vaUrl, vote.electionId);
+        vote.shares = shares;
+        let results = await fetchResults(vaUrl, vote.electionId);
+        vote.results = results;
+    }
+
     return result;
 });
 
@@ -99,33 +105,41 @@ export const getElections = createAsyncThunk('chain/getElections', async (vaUrl)
 export const slice = createSlice({
     name: 'chain',
     initialState: {
-        sealers: [],
+        sealer: {},
+        wallet: {},
+        chain: {},
+        keys: {},
+        spec: {},
         elections: [],
         votingAuthority: '',
         registeredSealers: [],
+        registeredWithVA: false,
+        sealers: [],
+        backendHealth: {},
+        nodeIsRunning: false,
+        keysInserted: false,
     },
     reducers: {
-        setSealers: (state, action) => {
-            state.sealers = action.payload;
+        setSealer: (state, action) => {
+            state.sealer = action.payload;
         }
     },
     extraReducers: {
         [checkValidatorKeysInserted.fulfilled]: (state, action) => {
-            state.sealers.find(s => s.name === action.payload.sealerName).keysInserted = action.payload;
+            state.keysInserted = action.payload;
         },
         [checkBackendRunning.fulfilled]: (state, action) => {
-            state.sealers.find(s => s.name === action.payload.sealerName).backendHealth = action.payload.health;
+            state.backendHealth = action.payload.health;
         },
         [checkNodeRunning.fulfilled]: (state, action) => {
-            state.sealers.find(s => s.name === action.payload.sealerName).nodeIsRunning = action.payload.nodeUp;
-
+            state.nodeIsRunning = action.payload.nodeUp;
         },
         [checkChainSpecLoaded.fulfilled]: (state, action) => {
-            state.sealers.find(s => s.name === action.payload.sealerName).spec = action.payload.response;
+            state.spec = action.payload.response;
 
         },
-        [loadSealers.fulfilled]: (state, action) => {
-            state.sealers = action.payload;
+        [loadSealer.fulfilled]: (state, action) => {
+            state.sealer = action.payload;
         },
         [loadVotingAuthority.fulfilled]: (state, action) => {
             state.votingAuthority = action.payload;
@@ -134,18 +148,15 @@ export const slice = createSlice({
             state.elections = action.payload;
         },
         [loadChainSpecForSealer.fulfilled]: (state, action) => {
-            state.sealers.find(s => s.name === action.payload.sealerName).spec = action.payload.response;
+            state.spec = action.payload.response;
         },
         [startChainNodeForSealer.fulfilled]: (state, action) => {
-            state.sealers.find(s => s.name === action.payload.sealerName).chain = action.payload.response;
-        },
-        [insertValidatorKeysForSealer.fulfilled]: (state, action) => {
-            state.sealers.find(s => s.name === action.payload.sealerName).keys = action.payload.response;
+            state.chain = action.payload.chain;
+            state.keys = action.payload.keys;
         },
         [loadWalletForSealer.fulfilled]: (state, action) => {
-            let sealer = state.sealers.find(s => s.name === action.payload.sealerName);
-            sealer.wallet = action.payload.wallet;
-            sealer.registeredWithVA = action.payload.registeredWithVA;
+            state.wallet = action.payload.wallet;
+            state.registeredWithVA = action.payload.registeredWithVA;
 
         }
     }
@@ -155,6 +166,7 @@ export const { setSealers } = slice.actions;
 
 
 export const selectSealers = state => state.chain.sealers;
+export const selectSealer = state => state.chain.sealer;
 export const selectVotingAuthority = state => state.chain.votingAuthority;
 export const selectElections = state => state.chain.elections;
 export default slice.reducer;

@@ -11,26 +11,66 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
-.app {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 2rem;
-  max-width: 100vw;
+
+
+.dashboard {
+  background-color: #f4f4f4;
+ 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
 }
-.sealer {
-  border: 1px solid black;
+.module, .simple-module {
+  margin-bottom: 10px;
+}
+.module {
+  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 6px 10px 0 rgb(0 0 0 / 14%), 0 1px 18px 0 rgb(0 0 0 / 12%);
+  background-color: #fff;
+  padding: 10px;
+  width: 50vw;
+}
+
+.module-header {
+  position: sticky;
+}
+.elections {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
   padding: 1rem;
 }
 
-.elections {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 2rem;
-}
 .election {
-  border: 1px solid black;
-  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  padding: 0.6rem;
+  transition: 0.2s ease-in-out;
+}
+.election:hover {
+  background: rgba(0, 0, 0, 0.04)
+}
+.sealer-title {
+  font-size: 1.8rem;
+  letter-spacing: 0.8px;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+.dialog-subtitle {
+  font-size: 1.3rem;
+  opacity: 0.8;
+  letter-spacing: 0.8px;
+  margin-top: 1rem;
+  margin-bottom: 0.8rem;
+}
+.election h3 {
+  margin-top: 0;
+  margin-bottom: 0.2rem;
 }
 .election p {
   line-break: anywhere;
+  margin: 0;
 }
