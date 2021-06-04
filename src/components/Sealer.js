@@ -53,7 +53,7 @@ function Sealer() {
 
     const voteHasOpenTask = (vote) => {
         if (vote.phase === 'Voting') return false;
-        if (vote.results.length > 0) return false;
+        //if (vote.results.length > 0) return false;
         return true;
         //return vote.phase !== 'Voting' || !vote.results
     }
@@ -68,6 +68,8 @@ function Sealer() {
                 <div>
                     {e.phase === 'Tallying' && (
                         <Button
+                            variant='contained'
+                            color='primary'
                             onClick={() => {
                                 dipatchTally(sealer, e.electionId);
                             }}
