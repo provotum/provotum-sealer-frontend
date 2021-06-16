@@ -1,3 +1,12 @@
+# Sealer Frontend
+
+This repository contains the code for the sealer frontend, which was part of my thesis. However, it was only a very minor part of it and it only came apparent later on during the thesis that it would be required. Thus it did not receive the same amount of care as the other parts, due to time constraints. It is functional however and the most pressing future work for it is described in the conclusion of my report, if you are working on this.
+
+## Setup & Development
+
+It's just a react application so you should be fine following the standard `npm` procedure. There are detailed instructions on setting up the entire Provotum ecosystem in a dev environment in my [infrastructure repository](https://github.com/provotum/provotum-infrastructure-claudio). There is also a template file for the environment file in here, which you will need to rename to `.env` and edit to your needs.
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

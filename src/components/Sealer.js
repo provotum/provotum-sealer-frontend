@@ -5,14 +5,12 @@ import {
     tally,
     selectSealer,
     loadWalletForSealer,
-    checkChainSpecLoaded,
     checkNodeRunning,
     checkBackendRunning,
-    checkValidatorKeysInserted
 } from "./../features/chain/chainSlice";
 import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect } from "react";
-import { Typography, Button, Card, CardContent } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 
 
 function Sealer() {

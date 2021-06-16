@@ -1,0 +1,4 @@
+REACT_APP_SEALER_1_URL = "http://localhost:3001"
+REACT_APP_SEALER_2_URL = "http://localhost:3002"
+REACT_APP_VA_URL = "http://localhost:3000"
+PORT=3010
