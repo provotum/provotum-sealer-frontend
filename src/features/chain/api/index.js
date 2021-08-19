@@ -61,8 +61,8 @@ export const sendAddress = (sealer) => {
 
 export const getSealer = async () => {
   return {
-    url: process.env.REACT_APP_SEALER_1_URL,
-    name: "sealer-bob",
+    url: process.env.REACT_APP_SEALER_URL,
+    name: process.env.REACT_APP_SEALER_NAME,
     spec: {},
     chain: {},
     keys: {},
